@@ -128,7 +128,7 @@ export default {
 
 
         // 发送 HTTP GET 请求，将输入框的内容作为参数
-        const response = await axios.post(`http://localhost:44444/dnd`, requestBody, {
+        const response = await axios.post(`http://124.222.139.115:44444/dnd`, requestBody, {
           // headers: {
           //   'Content-Type': 'application/json' // 设置请求头
           // }
