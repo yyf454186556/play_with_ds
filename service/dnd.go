@@ -230,7 +230,9 @@ func (s *DNDService) DNDHandler(c *gin.Context) {
 		s.DNDMap[req.Name] = s.DNDPolish(s.DNDMap[req.Name])
 	}
 
-	c.JSON(http.StatusOK, gin.H{"success": value})
+	uuid := GetPicture(value)
+
+	c.JSON(http.StatusOK, gin.H{"success": value, "uuid": uuid})
 }
 
 func (s *DNDService) AskDND(name string, msg []*model.ChatCompletionMessage) error {
