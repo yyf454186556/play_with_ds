@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"os"
 	"strings"
 
 	"github.com/gin-contrib/cors"
@@ -184,8 +185,7 @@ func main() {
 
 func DND() {
 	client := arkruntime.NewClientWithApiKey(
-		//os.Getenv("ARK_API_KEY"),
-		"d0797c1d-dc09-47af-9e9d-d40079ffd006",
+		os.Getenv("ARK_API_KEY"),
 	)
 	ctx := context.Background()
 	message := make([]*model.ChatCompletionMessage, 0)
