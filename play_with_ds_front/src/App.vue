@@ -28,7 +28,7 @@ export default {
 
 
         // 发送 HTTP GET 请求，将输入框的内容作为参数
-        const response = await axios.post(`http://localhost:44444/ask20`, requestBody, {
+        const response = await axios.post(`http://118.89.203.67:44444/ask20`, requestBody, {
           // headers: {
           //   'Content-Type': 'application/json' // 设置请求头
           // }
