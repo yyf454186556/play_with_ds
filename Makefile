@@ -8,7 +8,7 @@ all:
 # 启动 Golang 后端
 backend:
 	@echo "Starting Golang backend..."
-	go run main.go
+	go run .
 
 # 安装前端依赖并启动前端开发服务器
 frontend:
