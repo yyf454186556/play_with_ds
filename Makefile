@@ -13,6 +13,6 @@ backend:
 # 安装前端依赖并启动前端开发服务器
 frontend:
 	@echo "Installing frontend dependencies..."
-	cd play_with_ds_front && npm install
+	cd ./play_with_ds_front && npm install
 	@echo "Starting frontend development server..."
 	cd frontend && npm run dev
