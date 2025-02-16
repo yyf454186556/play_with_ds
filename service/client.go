@@ -26,7 +26,7 @@ func GetClient() *arkruntime.Client {
 }
 
 func GetPicture(prompt string) string {
-	testAk := "AKLTMThlZWU3YjUyMDA4NDYzNjgwZTYyZmI1YTViZDVjMzY"
+	testAk := os.Getenv("ARK_API_VISION_AK_KEY")
 	testSk := os.Getenv("ARK_API_VISION_KEY")
 
 	visual.DefaultInstance.Client.SetAccessKey(testAk)
