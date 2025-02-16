@@ -270,8 +270,7 @@ func DND() {
 
 func DNDPolish(msg []*model.ChatCompletionMessage) []*model.ChatCompletionMessage {
 	client := arkruntime.NewClientWithApiKey(
-		//os.Getenv("ARK_API_KEY"),
-		"d0797c1d-dc09-47af-9e9d-d40079ffd006",
+		os.Getenv("ARK_API_KEY"),
 	)
 
 	sb := strings.Builder{}
@@ -321,8 +320,7 @@ func DNDPolish(msg []*model.ChatCompletionMessage) []*model.ChatCompletionMessag
 
 func Ask20() {
 	client := arkruntime.NewClientWithApiKey(
-		//os.Getenv("ARK_API_KEY"),
-		"d0797c1d-dc09-47af-9e9d-d40079ffd006",
+		os.Getenv("ARK_API_KEY"),
 	)
 	ctx := context.Background()
 	message := make([]*model.ChatCompletionMessage, 0)
@@ -407,8 +405,7 @@ func Ask20() {
 
 func Ask20Polish(msg []*model.ChatCompletionMessage) []*model.ChatCompletionMessage {
 	client := arkruntime.NewClientWithApiKey(
-		//os.Getenv("ARK_API_KEY"),
-		"d0797c1d-dc09-47af-9e9d-d40079ffd006",
+		os.Getenv("ARK_API_KEY"),
 	)
 
 	sb := strings.Builder{}
@@ -458,8 +455,7 @@ func Ask20Polish(msg []*model.ChatCompletionMessage) []*model.ChatCompletionMess
 
 func Ask20Http(name string, msg []*model.ChatCompletionMessage) error {
 	client := arkruntime.NewClientWithApiKey(
-		//os.Getenv("ARK_API_KEY"),
-		"d0797c1d-dc09-47af-9e9d-d40079ffd006",
+		os.Getenv("ARK_API_KEY"),
 	)
 	ctx := context.Background()
 
@@ -489,8 +485,7 @@ func Ask20Http(name string, msg []*model.ChatCompletionMessage) error {
 
 func AskNormal(name string, msg []*model.ChatCompletionMessage) error {
 	client := arkruntime.NewClientWithApiKey(
-		//os.Getenv("ARK_API_KEY"),
-		"d0797c1d-dc09-47af-9e9d-d40079ffd006",
+		os.Getenv("ARK_API_KEY"),
 	)
 	ctx := context.Background()
 
@@ -523,8 +518,7 @@ func AskNormal(name string, msg []*model.ChatCompletionMessage) error {
 
 func NormalPolish(msg []*model.ChatCompletionMessage) []*model.ChatCompletionMessage {
 	client := arkruntime.NewClientWithApiKey(
-		//os.Getenv("ARK_API_KEY"),
-		"d0797c1d-dc09-47af-9e9d-d40079ffd006",
+		os.Getenv("ARK_API_KEY"),
 	)
 
 	sb := strings.Builder{}
