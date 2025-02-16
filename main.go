@@ -3,15 +3,17 @@ package main
 import (
 	"context"
 	"fmt"
+	"io"
+	"log"
+	"net/http"
+	"strings"
+
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 	"github.com/volcengine/volcengine-go-sdk/service/arkruntime"
 	"github.com/volcengine/volcengine-go-sdk/service/arkruntime/model"
 	"github.com/volcengine/volcengine-go-sdk/volcengine"
-	"io"
-	"log"
-	"net/http"
-	"strings"
 )
 
 var inputCh = make(chan string)
@@ -36,6 +38,14 @@ var NormalMap = make(map[string][]*model.ChatCompletionMessage)
 func main() {
 	// 创建 Gin 实例
 	r := gin.Default()
+
+	r.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"http://localhost:5173", "http://localhost:44445"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+	}))
 
 	// WebSocket 路由
 	r.GET("/ws", func(c *gin.Context) {
@@ -561,4 +571,3 @@ func NormalPolish(msg []*model.ChatCompletionMessage) []*model.ChatCompletionMes
 	})
 	return newMessages
 }
-
