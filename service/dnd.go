@@ -17,6 +17,7 @@ type DNDService struct {
 	DNDMap   map[string][]*model.ChatCompletionMessage
 	InputCh  chan string
 	OutputCh chan string
+	FaceMap  map[string]string
 }
 
 func NewDNDService() *DNDService {
@@ -24,6 +25,7 @@ func NewDNDService() *DNDService {
 		DNDMap:   make(map[string][]*model.ChatCompletionMessage),
 		InputCh:  make(chan string),
 		OutputCh: make(chan string),
+		FaceMap:  make(map[string]string),
 	}
 }
 
@@ -199,9 +201,16 @@ func (s *DNDService) DNDHandler(c *gin.Context) {
 	}
 	if req.Content == "重置" {
 		delete(s.DNDMap, req.Name)
+		delete(s.FaceMap, req.Name)
 		c.JSON(http.StatusOK, gin.H{"error": "重置成功"})
 		return
 	}
+        if _, exist := s.FaceMap[req.Name]; !exist {
+		s.FaceMap[req.Name] = req.Content
+		c.JSON(http.StatusOK, gin.H{"success": req.Content})
+		return
+	}
+
 	if _, ok := s.DNDMap[req.Name]; !ok {
 		s.DNDMap[req.Name] = make([]*model.ChatCompletionMessage, 0)
 	}
@@ -230,7 +239,7 @@ func (s *DNDService) DNDHandler(c *gin.Context) {
 		s.DNDMap[req.Name] = s.DNDPolish(s.DNDMap[req.Name])
 	}
 
-	uuid := GetPicture(value)
+	uuid := GetPicture(value, s.FaceMap[req.Name])
 
 	c.JSON(http.StatusOK, gin.H{"success": value, "uuid": uuid})
 }

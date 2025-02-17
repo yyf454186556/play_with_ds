@@ -25,7 +25,7 @@ func GetClient() *arkruntime.Client {
 	return client
 }
 
-func GetPicture(prompt string) string {
+func GetPicture(prompt, role string) string {
 	testAk := os.Getenv("ARK_API_VISION_AK_KEY")
 	testSk := os.Getenv("ARK_API_VISION_KEY")
 
@@ -34,7 +34,7 @@ func GetPicture(prompt string) string {
 
 	reqBody := map[string]interface{}{
 		"req_key": "high_aes_general_v21_L",
-		"prompt":  fmt.Sprintf("漫画风格，背景描述是这样的: %s。请根据文本生成图片", prompt),
+		"prompt":  fmt.Sprintf("漫画风格，背景描述是这样的: %s。角色描述是这样的: %s. 请根据文本生成图片", prompt, role),
 		"width":   256,
 		"height":  256,
 	}

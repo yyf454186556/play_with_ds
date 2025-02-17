@@ -3,6 +3,10 @@
     <!-- 左侧内容容器 -->
     <div class="left-section">
       <h1>小小DND</h1>
+      <input v-model="inputName"
+        placeholder="你的id"
+	class="custom-input-name"
+      ></input>
       <textarea 
         v-model="inputText" 
         placeholder="请输入内容"
@@ -27,7 +31,16 @@
       alt="Dynamic Image"
       class="fixed-image"
     >
+
+
+
   </div>
+    <!-- 对话记录显示区域 -->
+    <div class="history-box">
+      <div v-for="(item, index) in history" :key="index" class="message">
+        {{ item.type === 'user' ? '玩家' : 'DM' }}: {{ item.content }}
+      </div>
+    </div>
 </template>
 
 <style scoped>
@@ -38,6 +51,15 @@
   align-items: flex-start; /* 顶部对齐 */
   max-width: 1200px;
   margin: 0 auto;
+}
+
+.history-box {
+  margin-top: 20px;
+  border: 1px solid #ccc;
+  padding: 10px;
+  height: 300px;
+  max-width: 1200px;
+  overflow-y: auto;
 }
 
 .left-section {
@@ -78,6 +100,15 @@
   font-family: inherit;
 }
 
+.custom-input-name {
+  border: none;
+  border-bottom: 2px solid #eee; /* 底部细线 */
+  padding: 12px;
+  font-size: 16px;
+  transition: border-color 0.3s;
+  font-family: inherit;
+}
+
 .custom-input:focus {
   border-bottom-color: #42b983;
   outline: none;
@@ -113,8 +144,10 @@ export default {
   data() {
     return {
       inputText: '', // 输入框的内容
+      inputName: '', // 用户id
       responseText: '', // 文本框的内容
       imageUrl: 'e0f4e7fb-d804-42e8-9c8b-b3d69e805ea4.png', // 图片路径
+      history: [],
     };
   },
   methods: {
@@ -122,21 +155,31 @@ export default {
       try {
         const requestBody = {
           auth: "zzyztyy",
-          name: "yyf",
+          name: this.inputName,
           content: this.inputText
         }
 
+        // 添加用户消息到历史记录
+        this.history.push({
+            type: 'user',
+            content: this.inputText
+        });
 
         // 发送 HTTP GET 请求，将输入框的内容作为参数
         const response = await axios.post(`http://124.222.139.115:44444/dnd`, requestBody, {
           // headers: {
           //   'Content-Type': 'application/json' // 设置请求头
           // }
-        });
-        
+        });        
         // 将响应数据转换为字符串并显示在文本框中
         this.responseText = JSON.stringify(response.data.success, null, 2);
         this.imageUrl = `/public/${response.data.uuid}.png`;
+
+	// 添加系统回复
+	this.history.push({
+	    type: 'system',
+	    content: this.responseText
+	});
       } catch (error) {
         // 如果请求失败，显示错误信息
         this.responseText = `请求失败: ${error.message}`;
