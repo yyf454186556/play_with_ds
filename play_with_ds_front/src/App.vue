@@ -168,7 +168,7 @@ export default {
       inputText: '', // 输入框的内容
       inputName: '', // 用户id
       responseText: '', // 文本框的内容
-      images: ['welcome.png', 'e0f4e7fb-d804-42e8-9c8b-b3d69e805ea4.png'], // 图片路径
+      images: ['welcome.png'], // 图片路径
       currentImageIndex: 0, // 当前显示的图片索引
       history: [],
     };
@@ -203,7 +203,8 @@ export default {
         this.responseText = JSON.stringify(response.data.success, null, 2);
         if (response.data.uuid) {
            //this.imageUrl = `/public/${response.data.uuid}.png`;
-           addImage(`/public/${response.data.uuid}.png`);
+           this.addImage(`/public/${response.data.uuid}.png`);
+           console.log("hello world")
         }
         // 添加系统回复
         this.history.push({
