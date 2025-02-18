@@ -1,46 +1,24 @@
 <template>
-  <div id="app">
-    <!-- 左侧内容容器 -->
-    <div class="left-section">
-      <h1>小小DND</h1>
-      <input v-model="inputName"
-        placeholder="你的id"
-	class="custom-input-name"
-      ></input>
-      <textarea 
-        v-model="inputText" 
-        placeholder="请输入内容"
-        class="custom-input"
-      ></textarea>
-      <button 
-        @click="fetchData"
-        class="borderless-btn"
-      >
-        DM，说句话
-      </button>
-      <textarea 
-        v-model="responseText" 
-        readonly
-        class="custom-textarea"
-      ></textarea>
+  <div>
+    <div id="app">
+      <!-- 左侧内容容器 -->
+      <div class="left-section">
+        <h1>小小DND</h1>
+        <input v-model="inputName" placeholder="你的id,用于标识此次冒险" class="custom-input-name"/>
+        <textarea v-model="inputText" placeholder="第一次会话时，请输入您的角色描述。包含时间，场景，任务描述等等。后续会依据第一次描述生成图片~" class="custom-input"></textarea>
+        <button  @click="fetchData"class="borderless-btn">DM，说句话</button>
+        <textarea v-model="responseText" readonly class="custom-textarea"></textarea>
+      </div>
+      <!-- 右侧固定图片容器 -->
+      <img :src="imageUrl" alt="Dynamic Image"class="fixed-image">
     </div>
-
-    <!-- 右侧固定图片容器 -->
-    <img 
-      :src="imageUrl" 
-      alt="Dynamic Image"
-      class="fixed-image"
-    >
-
-
-
-  </div>
     <!-- 对话记录显示区域 -->
     <div class="history-box">
-      <div v-for="(item, index) in history" :key="index" class="message">
+      <div v-for="(item, index) in history" :key="index" class="message" :class="{'user-message': item.type === 'user', 'dm-message': item.type !== 'user'}">
         {{ item.type === 'user' ? '玩家' : 'DM' }}: {{ item.content }}
       </div>
     </div>
+</div>
 </template>
 
 <style scoped>
@@ -55,11 +33,15 @@
 
 .history-box {
   margin-top: 20px;
+  margin-right: 20px;
+  margin-left: 20px;
   border: 1px solid #ccc;
   padding: 10px;
   height: 300px;
+  padding: 40px;
   max-width: 1200px;
   overflow-y: auto;
+  margin: 20 auto;
 }
 
 .left-section {
@@ -72,7 +54,7 @@
 
 /* 无边框按钮样式 */
 .borderless-btn {
-  margin-top: 40px; /* 修正了缺少单位的问题 */
+  margin-top: 10px; /* 修正了缺少单位的问题 */
   border: none;
   outline: none;
   padding: 12px 24px;
@@ -96,8 +78,9 @@
   font-size: 16px;
   transition: border-color 0.3s;
   resize: vertical; /* 允许垂直调整 */
-  min-height: 100px; /* 设置最小高度 */
+  min-height: 130px; /* 设置最小高度 */
   font-family: inherit;
+  resize: none;
 }
 
 .custom-input-name {
@@ -120,11 +103,12 @@
   background: #f8f8f8;
   padding: 15px;
   border-radius: 8px;
-  min-height: 250px;
+  height: 175px;
   resize: vertical; /* 允许垂直调整 */
   font-family: inherit;
   font-size: 14px;
   overflow: hidden;
+  resize: none;
 }
 
 /* 固定尺寸图片 */
@@ -134,6 +118,16 @@
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
   object-fit: cover; /* 保持比例填充 */
+}
+
+/* 玩家消息的样式 */
+.user-message {
+  color: black; /* 玩家消息黑色 */
+}
+
+/* DM消息的样式 */
+.dm-message {
+  color: blue; /* DM消息蓝色 */
 }
 </style>
 
@@ -146,7 +140,7 @@ export default {
       inputText: '', // 输入框的内容
       inputName: '', // 用户id
       responseText: '', // 文本框的内容
-      imageUrl: 'e0f4e7fb-d804-42e8-9c8b-b3d69e805ea4.png', // 图片路径
+      imageUrl: 'welcome.png', // 图片路径
       history: [],
     };
   },
@@ -173,13 +167,14 @@ export default {
         });        
         // 将响应数据转换为字符串并显示在文本框中
         this.responseText = JSON.stringify(response.data.success, null, 2);
-        this.imageUrl = `/public/${response.data.uuid}.png`;
-
-	// 添加系统回复
-	this.history.push({
-	    type: 'system',
-	    content: this.responseText
-	});
+        if (response.data.uuid) {
+           this.imageUrl = `/public/${response.data.uuid}.png`;
+        }
+        // 添加系统回复
+        this.history.push({
+            type: 'system',
+            content: this.responseText
+        });
       } catch (error) {
         // 如果请求失败，显示错误信息
         this.responseText = `请求失败: ${error.message}`;
@@ -188,3 +183,4 @@ export default {
   }
 };
 </script>
+
