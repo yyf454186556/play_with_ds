@@ -10,7 +10,13 @@
         <textarea v-model="responseText" readonly class="custom-textarea"></textarea>
       </div>
       <!-- 右侧固定图片容器 -->
-      <img :src="imageUrl" alt="Dynamic Image"class="fixed-image">
+      <div class="fied-image-div">
+        <img :src="currentImage" alt="Dynamic Image"class="fixed-image">
+        <div>
+          <button @click="showPreview" class="borderless-btn-arrorw"> < </button>
+          <button @click="showNext" class="borderless-btn-arrorw"> > </button>
+        </div>
+      </div>
     </div>
     <!-- 对话记录显示区域 -->
     <div class="history-box">
@@ -66,6 +72,17 @@
   font-size: 16px;
 }
 
+/* 无边框按钮样式 */
+.borderless-btn-arrorw {
+  margin-right: 20px;
+  border: none;
+  outline: none;
+  background: #42b983;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
 .borderless-btn:hover {
   background: #33a06f;
 }
@@ -103,7 +120,7 @@
   background: #f8f8f8;
   padding: 15px;
   border-radius: 8px;
-  height: 175px;
+  height: 205px;
   resize: vertical; /* 允许垂直调整 */
   font-family: inherit;
   font-size: 14px;
@@ -113,6 +130,17 @@
 
 /* 固定尺寸图片 */
 .fixed-image {
+  width: 512px;
+  height: 512px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  object-fit: cover; /* 保持比例填充 */
+}
+
+.fixed-image-div {
+  flex: 1; /* 占据剩余空间 */
+  display: flex;
+  flex-direction: column;
   width: 512px;
   height: 512px;
   border-radius: 8px;
@@ -140,9 +168,15 @@ export default {
       inputText: '', // 输入框的内容
       inputName: '', // 用户id
       responseText: '', // 文本框的内容
-      imageUrl: 'welcome.png', // 图片路径
+      images: ['welcome.png', 'e0f4e7fb-d804-42e8-9c8b-b3d69e805ea4.png'], // 图片路径
+      currentImageIndex: 0, // 当前显示的图片索引
       history: [],
     };
+  },
+  computed: {
+    currentImage() {
+      return this.images[this.currentImageIndex] || '';
+    }
   },
   methods: {
     async fetchData() {
@@ -168,7 +202,8 @@ export default {
         // 将响应数据转换为字符串并显示在文本框中
         this.responseText = JSON.stringify(response.data.success, null, 2);
         if (response.data.uuid) {
-           this.imageUrl = `/public/${response.data.uuid}.png`;
+           //this.imageUrl = `/public/${response.data.uuid}.png`;
+           addImage(`/public/${response.data.uuid}.png`);
         }
         // 添加系统回复
         this.history.push({
@@ -179,6 +214,20 @@ export default {
         // 如果请求失败，显示错误信息
         this.responseText = `请求失败: ${error.message}`;
       }
+    },
+    showPreview() {
+      if (this.currentImageIndex > 0) {
+        this.currentImageIndex--;
+      }
+    },
+    showNext() {
+      if (this.currentImageIndex < this.images.length) {
+        this.currentImageIndex++;
+      }
+    },
+    addImage(imageUrl) {
+      this.images.push(imageUrl);
+      this.currentImageIndex = this.images.length - 1;
     }
   }
 };
