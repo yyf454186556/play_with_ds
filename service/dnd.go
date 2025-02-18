@@ -205,9 +205,9 @@ func (s *DNDService) DNDHandler(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"error": "重置成功"})
 		return
 	}
-        if _, exist := s.FaceMap[req.Name]; !exist {
+	if _, exist := s.FaceMap[req.Name]; !exist {
 		s.FaceMap[req.Name] = req.Content
-		c.JSON(http.StatusOK, gin.H{"success": req.Content})
+		c.JSON(http.StatusOK, gin.H{"success": fmt.Sprintf("已记录角色信息：%s", req.Content)})
 		return
 	}
 
@@ -234,12 +234,12 @@ func (s *DNDService) DNDHandler(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+	uuid := ""
 	value := *s.DNDMap[req.Name][len(s.DNDMap[req.Name])-1].Content.StringValue
-	if len(s.DNDMap[req.Name]) > 10 {
+	if len(s.DNDMap[req.Name]) > 8 {
 		s.DNDMap[req.Name] = s.DNDPolish(s.DNDMap[req.Name])
+		uuid = GetPicture(value, s.FaceMap[req.Name])
 	}
-
-	uuid := GetPicture(value, s.FaceMap[req.Name])
 
 	c.JSON(http.StatusOK, gin.H{"success": value, "uuid": uuid})
 }
