@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"play_with_ds/db"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -14,18 +15,18 @@ import (
 )
 
 type DNDService struct {
-	DNDMap   map[string][]*model.ChatCompletionMessage
+	DNDMap   map[int][]*model.ChatCompletionMessage
 	InputCh  chan string
 	OutputCh chan string
-	FaceMap  map[string]string
+	FaceMap  map[int]string
 }
 
 func NewDNDService() *DNDService {
 	return &DNDService{
-		DNDMap:   make(map[string][]*model.ChatCompletionMessage),
+		DNDMap:   make(map[int][]*model.ChatCompletionMessage),
 		InputCh:  make(chan string),
 		OutputCh: make(chan string),
-		FaceMap:  make(map[string]string),
+		FaceMap:  make(map[int]string),
 	}
 }
 
@@ -199,52 +200,93 @@ func (s *DNDService) DNDHandler(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "auth error"})
 		return
 	}
+	if req.StoryID == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "bad request. invalid story id"})
+		return
+	}
 	if req.Content == "重置" {
-		delete(s.DNDMap, req.Name)
-		delete(s.FaceMap, req.Name)
+		delete(s.DNDMap, req.StoryID)
+		delete(s.FaceMap, req.StoryID)
 		c.JSON(http.StatusOK, gin.H{"error": "重置成功"})
 		return
 	}
-	if _, exist := s.FaceMap[req.Name]; !exist {
-		s.FaceMap[req.Name] = req.Content
-		c.JSON(http.StatusOK, gin.H{"success": fmt.Sprintf("已记录角色信息：%s", req.Content)})
+
+	story, err := db.GetStoryDetailByID(c, req.StoryID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "call db error"})
 		return
 	}
 
-	if _, ok := s.DNDMap[req.Name]; !ok {
-		s.DNDMap[req.Name] = make([]*model.ChatCompletionMessage, 0)
+	s.FaceMap[req.StoryID] = story.RoleDesign.Content
+
+	details, err := db.GetStoryDetailsByStoryID(c, req.StoryID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "call db error"})
+		return
 	}
-	if len(s.DNDMap[req.Name]) == 0 {
-		s.DNDMap[req.Name] = append(s.DNDMap[req.Name], &model.ChatCompletionMessage{
+	if _, ok := s.DNDMap[req.StoryID]; !ok || len(details) == 0 {
+		s.DNDMap[req.StoryID] = make([]*model.ChatCompletionMessage, 0)
+	}
+
+	if len(s.DNDMap[req.StoryID]) == 0 {
+		s.DNDMap[req.StoryID] = append(s.DNDMap[req.StoryID], &model.ChatCompletionMessage{
 			Role: model.ChatMessageRoleSystem,
 			Content: &model.ChatCompletionMessageContent{
 				StringValue: volcengine.String(dnd_system_description),
 			},
 		})
-	}
-	s.DNDMap[req.Name] = append(s.DNDMap[req.Name], &model.ChatCompletionMessage{
-		Role: model.ChatMessageRoleUser,
-		Content: &model.ChatCompletionMessageContent{
-			StringValue: volcengine.String(req.Content),
-		},
-	})
+	} else {
+		for _, d := range details {
+			if d.Role == "player" {
+				s.DNDMap[req.StoryID] = append(s.DNDMap[req.StoryID], &model.ChatCompletionMessage{
+					Role: model.ChatMessageRoleUser,
+					Content: &model.ChatCompletionMessageContent{
+						StringValue: volcengine.String(d.Content),
+					},
+				})
+			} else {
+				s.DNDMap[req.StoryID] = append(s.DNDMap[req.StoryID], &model.ChatCompletionMessage{
+					Role: model.ChatMessageRoleAssistant,
+					Content: &model.ChatCompletionMessageContent{
+						StringValue: volcengine.String(d.Content),
+					},
+				})
+			}
+		}
 
-	err := s.AskDND(req.Name, s.DNDMap[req.Name])
+		s.DNDMap[req.StoryID] = append(s.DNDMap[req.StoryID], &model.ChatCompletionMessage{
+			Role: model.ChatMessageRoleUser,
+			Content: &model.ChatCompletionMessageContent{
+				StringValue: volcengine.String(req.Content),
+			},
+		})
+	}
+
+	err = s.AskDND(req.StoryID, s.DNDMap[req.StoryID])
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+
+	// 写用户的输入
+	db.AddStoryDetail(c, req.StoryID, "player", req.Content, "")
+
 	uuid := ""
-	value := *s.DNDMap[req.Name][len(s.DNDMap[req.Name])-1].Content.StringValue
-	if len(s.DNDMap[req.Name]) > 8 {
-		s.DNDMap[req.Name] = s.DNDPolish(s.DNDMap[req.Name])
-		uuid = GetPicture(value, s.FaceMap[req.Name])
+	value := *s.DNDMap[req.StoryID][len(s.DNDMap[req.StoryID])-1].Content.StringValue
+	if len(s.DNDMap[req.StoryID]) > 8 {
+		s.DNDMap[req.StoryID] = s.DNDPolish(s.DNDMap[req.StoryID])
+		uuid = GetPicture(value, s.FaceMap[req.StoryID])
+		// 写dm的回复
+		db.AddStoryDetail(c, req.StoryID, "dm", value, uuid)
+	} else {
+		// 写dm的回复
+		db.AddStoryDetail(c, req.StoryID, "dm", value, "")
 	}
 
 	c.JSON(http.StatusOK, gin.H{"success": value, "uuid": uuid})
 }
 
-func (s *DNDService) AskDND(name string, msg []*model.ChatCompletionMessage) error {
+func (s *DNDService) AskDND(id int, msg []*model.ChatCompletionMessage) error {
 	client := GetClient()
 	ctx := context.Background()
 
@@ -267,7 +309,32 @@ func (s *DNDService) AskDND(name string, msg []*model.ChatCompletionMessage) err
 		},
 	})
 
-	s.DNDMap[name] = msg
+	s.DNDMap[id] = msg
 
 	return nil
+}
+
+func (s *DNDService) DNDAddRole(c *gin.Context) {
+	req := &AddRoleRequest{}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	if req.Auth != "zzyztyy" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "auth error"})
+		return
+	}
+
+	roleID, err := db.AddRoles(c, req.Name, req.Description)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "db create role error"})
+		return
+	}
+	storyID, err := db.AddDNDStory(c, roleID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "db create story error"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"success": "ok", "story_id": storyID})
 }

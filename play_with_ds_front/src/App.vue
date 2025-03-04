@@ -4,7 +4,7 @@
       <!-- 左侧内容容器 -->
       <div class="left-section">
         <h1>小小DND</h1>
-        <input v-model="inputName" placeholder="你的id,用于标识此次冒险" class="custom-input-name"/>
+        <input v-model="inputName" placeholder="你的id,用于标识此次冒险。只能是数字" class="custom-input-name"/>
         <textarea v-model="inputText" placeholder="第一次会话时，请输入您的角色描述。包含时间，场景，任务描述等等。后续会依据第一次描述生成图片~" class="custom-input"></textarea>
         <button  @click="fetchData"class="borderless-btn">DM，说句话</button>
         <textarea v-model="responseText" readonly class="custom-textarea"></textarea>
@@ -47,7 +47,6 @@
   padding: 40px;
   max-width: 1200px;
   overflow-y: auto;
-  margin: 20 auto;
 }
 
 .left-section {
@@ -183,7 +182,7 @@ export default {
       try {
         const requestBody = {
           auth: "zzyztyy",
-          name: this.inputName,
+          story_id: this.inputName,
           content: this.inputText
         }
 

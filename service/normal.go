@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"path/filepath"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -26,7 +27,7 @@ func NewNormalService() *NormalService {
 }
 
 func (s *NormalService) NormalDSHandler(c *gin.Context) {
-	req := &CommonRequest{}
+	req := &Ask20Request{}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -148,4 +149,24 @@ func (s *NormalService) NormalPolish(msg []*model.ChatCompletionMessage) []*mode
 		},
 	})
 	return newMessages
+}
+
+func (s *NormalService) GetImageList(c *gin.Context) {
+	// 使用相对路径定位到目标目录
+	pattern := "./play_with_ds_front/public/*.png"
+
+	// 获取所有匹配的PNG文件路径
+	matches, err := filepath.Glob(pattern)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "查找图片失败"})
+		return
+	}
+
+	// 提取纯文件名
+	var filenames []string
+	for _, match := range matches {
+		filenames = append(filenames, filepath.Base(match))
+	}
+
+	c.JSON(http.StatusOK, gin.H{"success": filenames})
 }

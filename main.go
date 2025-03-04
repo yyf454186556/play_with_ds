@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"play_with_ds/db"
 	"play_with_ds/service"
 
 	"github.com/gin-contrib/cors"
@@ -11,7 +12,12 @@ import (
 
 var NormalMap = make(map[string][]*model.ChatCompletionMessage)
 
+func setUp() {
+	db.Setup()
+}
+
 func main() {
+	setUp()
 	ask20Service := service.NewAsk20Service()
 	normalService := service.NewNormalService()
 	dndService := service.NewDNDService()
@@ -34,8 +40,14 @@ func main() {
 	r.GET("/ws/dnd", dndService.DNDSocketfunc)
 
 	r.POST("/ask20", ask20Service.Ask20Handler)
-	r.POST("/ds", normalService.NormalDSHandler)
 	r.POST("/dnd", dndService.DNDHandler)
+	r.POST("/dnd-add-role", dndService.DNDAddRole)
+
+	// 1. 设置角色基础信息
+	// 2. 根据ID查询历史对话信息
+	// 3. 展示所有图片信息
+	r.POST("/ds", normalService.NormalDSHandler)
+	r.GET("/all-images", normalService.GetImageList)
 
 	if err := r.Run(":44444"); err != nil {
 		log.Fatal("服务器启动失败:", err)

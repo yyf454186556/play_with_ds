@@ -185,7 +185,7 @@ func (s *Ask20Service) Ask20Http(name string, msg []*model.ChatCompletionMessage
 }
 
 func (s *Ask20Service) Ask20Handler(c *gin.Context) {
-	req := &CommonRequest{}
+	req := &Ask20Request{}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
