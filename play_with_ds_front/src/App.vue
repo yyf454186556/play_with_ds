@@ -22,6 +22,7 @@
     <div class="history-box">
       <div v-for="(item, index) in history" :key="index" class="message" :class="{'user-message': item.type === 'user', 'dm-message': item.type !== 'user'}">
         {{ item.type === 'user' ? '玩家' : 'DM' }}: {{ item.content }}
+        <span v-html="formatContent(item.content)"></span>
       </div>
     </div>
 </div>
@@ -228,6 +229,9 @@ export default {
     addImage(imageUrl) {
       this.images.push(imageUrl);
       this.currentImageIndex = this.images.length - 1;
+    },
+    formatContent(content) {
+      return content.replace(/\n/g, '<br>');
     }
   }
 };

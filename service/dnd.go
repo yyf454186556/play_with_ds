@@ -269,7 +269,11 @@ func (s *DNDService) DNDHandler(c *gin.Context) {
 	}
 
 	// 写用户的输入
-	db.AddStoryDetail(c, req.StoryID, "player", req.Content, "")
+	err = db.AddStoryDetail(c, req.StoryID, "player", req.Content, "")
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 
 	uuid := ""
 	value := *s.DNDMap[req.StoryID][len(s.DNDMap[req.StoryID])-1].Content.StringValue
@@ -277,10 +281,18 @@ func (s *DNDService) DNDHandler(c *gin.Context) {
 		s.DNDMap[req.StoryID] = s.DNDPolish(s.DNDMap[req.StoryID])
 		uuid = GetPicture(value, s.FaceMap[req.StoryID])
 		// 写dm的回复
-		db.AddStoryDetail(c, req.StoryID, "dm", value, uuid)
+		err = db.AddStoryDetail(c, req.StoryID, "dm", value, uuid)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
 	} else {
 		// 写dm的回复
-		db.AddStoryDetail(c, req.StoryID, "dm", value, "")
+		err = db.AddStoryDetail(c, req.StoryID, "dm", value, "")
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
 	}
 
 	c.JSON(http.StatusOK, gin.H{"success": value, "uuid": uuid})

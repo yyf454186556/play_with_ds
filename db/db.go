@@ -65,7 +65,7 @@ func AddStoryDetail(ctx context.Context, storyID int, roleType, content, image s
 		Content:    content,
 		Image:      image,
 	}
-	return LocalDB.Model(&RoleDesign{}).Create(detail).Error
+	return LocalDB.Model(&StoryDetail{}).Create(detail).Error
 }
 
 func GetStoryDetailsByStoryID(ctx context.Context, storyID int) ([]*StoryDetail, error) {
