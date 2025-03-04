@@ -182,7 +182,7 @@ export default {
       try {
         const requestBody = {
           auth: "zzyztyy",
-          story_id: this.inputName,
+          story_id: parseInt(this.inputName, 10),
           content: this.inputText
         }
 
